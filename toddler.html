@@ -34,8 +34,11 @@
     color: rgba(255,255,255,0.5);
     text-decoration: none;
     letter-spacing: 1px;
-    transition: color 0.2s;
+    transition: color 0.2s, opacity 0.3s;
+    opacity: 0;
+    pointer-events: none;
   }
+  #back-link.visible { opacity: 1; pointer-events: auto; }
   #back-link:hover { color: white; }
 
   #unlock-screen {
@@ -623,8 +626,12 @@ document.addEventListener('click', (e) => {
 function lock() {
   locked = true;
   document.getElementById('unlock-screen').classList.add('hidden');
+  document.getElementById('back-link').classList.remove('visible');
   document.body.style.cursor = 'none';
   cursorEl.style.display = 'block';
+
+  // Enter fullscreen
+  try { document.documentElement.requestFullscreen(); } catch(e) {}
 
   // Resume audio context on first interaction
   try { getAudio().resume(); } catch(e) {}
@@ -655,8 +662,12 @@ function unlock() {
   document.body.style.cursor = 'default';
   cursorEl.style.display = 'none';
 
+  // Exit fullscreen
+  try { if (document.fullscreenElement) document.exitFullscreen(); } catch(e) {}
+
   const screen = document.getElementById('unlock-screen');
   screen.classList.remove('hidden');
+  document.getElementById('back-link').classList.add('visible');
   document.getElementById('lock-btn').textContent = '🔒 Lock Again';
 }
 
