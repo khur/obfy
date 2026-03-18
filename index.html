@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>obfy — little things that spark joy</title>
+<meta name="description" content="A tiny collection of fun things made with love. Start with Toddler Mode — lock your keyboard and let the chaos begin.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎉</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Boogaloo&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1c1c2e;
+    --cream: #fffdf7;
+    --pop1: #ff5e5b;
+    --pop2: #ffed4a;
+    --pop3: #00cecb;
+    --pop4: #ff6b9d;
+    --pop5: #c77dff;
+    --pop6: #06d6a0;
+    --shadow: 4px 4px 0px var(--ink);
+    --shadow-lg: 6px 6px 0px var(--ink);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Quicksand', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* ── CUSTOM CURSOR ── */
+  #cursor {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    font-size: 1.6rem;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s;
+    user-select: none;
+  }
+
+  /* ── BACKGROUND DOODLES ── */
+  .bg-doodle {
+    position: fixed;
+    pointer-events: none;
+    z-index: 0;
+    font-size: clamp(1.5rem, 4vw, 3.5rem);
+    opacity: 0.07;
+    user-select: none;
+    animation: drift var(--d, 20s) ease-in-out infinite alternate;
+  }
+  @keyframes drift {
+    from { transform: translate(0,0) rotate(var(--r0, 0deg)); }
+    to   { transform: translate(var(--tx,10px), var(--ty,15px)) rotate(var(--r1, 15deg)); }
+  }
+
+  /* ── NOISE TEXTURE ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.4;
+  }
+
+  /* ── LAYOUT ── */
+  main { position: relative; z-index: 2; }
+
+  /* ── HEADER ── */
+  header {
+    padding: 2rem 2rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .logo {
+    font-family: 'Boogaloo', cursive;
+    font-size: clamp(2rem, 5vw, 3rem);
+    color: var(--ink);
+    text-decoration: none;
+    letter-spacing: 2px;
+    position: relative;
+    display: inline-block;
+  }
+  .logo span {
+    display: inline-block;
+    transition: transform 0.2s;
+  }
+  .logo:hover span { animation: letterJiggle 0.4s ease; }
+  @keyframes letterJiggle {
+    0%,100% { transform: rotate(0) scale(1); }
+    25%  { transform: rotate(-8deg) scale(1.15); }
+    75%  { transform: rotate(6deg) scale(1.1); }
+  }
+  .logo-dot {
+    display: inline-block;
+    width: 10px; height: 10px;
+    background: var(--pop1);
+    border-radius: 50%;
+    margin-left: 3px;
+    vertical-align: middle;
+    border: 2px solid var(--ink);
+    animation: blink 2s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.5); background: var(--pop2); }
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 3rem 2rem;
+    position: relative;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    background: var(--pop2);
+    color: var(--ink);
+    font-family: 'Boogaloo', cursive;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    padding: 0.4rem 1.2rem;
+    border-radius: 50px;
+    border: 2.5px solid var(--ink);
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+    animation: fadeSlideIn 0.6s ease both;
+    text-transform: uppercase;
+  }
+
+  .hero-title {
+    font-family: 'Boogaloo', cursive;
+    font-size: clamp(3.5rem, 12vw, 9rem);
+    line-height: 0.95;
+    letter-spacing: -1px;
+    margin-bottom: 1.5rem;
+    animation: fadeSlideIn 0.7s 0.1s ease both;
+  }
+
+  .hero-title .line1 { display: block; color: var(--ink); }
+  .hero-title .line2 {
+    display: block;
+    color: var(--pop1);
+    -webkit-text-stroke: 2px var(--ink);
+    position: relative;
+  }
+  .hero-title .line2::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 4px; top: 4px;
+    color: var(--ink);
+    z-index: -1;
+    -webkit-text-stroke: 0;
+  }
+
+  .hero-sub {
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    font-weight: 500;
+    color: #555;
+    max-width: 500px;
+    line-height: 1.6;
+    margin-bottom: 3rem;
+    animation: fadeSlideIn 0.7s 0.2s ease both;
+  }
+
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: 'Boogaloo', cursive;
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
+    letter-spacing: 1px;
+    color: var(--ink);
+    background: var(--pop3);
+    padding: 1rem 2.5rem;
+    border-radius: 50px;
+    border: 3px solid var(--ink);
+    box-shadow: var(--shadow-lg);
+    text-decoration: none;
+    transition: transform 0.15s, box-shadow 0.15s;
+    animation: fadeSlideIn 0.7s 0.3s ease both;
+  }
+  .hero-cta:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 8px 8px 0px var(--ink);
+  }
+  .hero-cta:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px var(--ink);
+  }
+  .cta-emoji { font-size: 1.8rem; animation: spin 3s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── SQUIGGLE DIVIDER ── */
+  .squiggle {
+    width: 100%; max-width: 600px;
+    margin: 0 auto;
+    overflow: visible;
+  }
+
+  /* ── CARD SECTION ── */
+  .section {
+    padding: 5rem 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: 'Boogaloo', cursive;
+    font-size: 1rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  .section-title {
+    font-family: 'Boogaloo', cursive;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  /* ── FEATURE CARD ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+
+  .card {
+    background: white;
+    border: 3px solid var(--ink);
+    border-radius: 24px;
+    box-shadow: var(--shadow-lg);
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-decoration: none;
+    color: var(--ink);
+    display: block;
+  }
+  .card:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: 9px 9px 0px var(--ink);
+  }
+  .card:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px var(--ink);
+  }
+
+  .card-accent {
+    position: absolute;
+    top: 0; right: 0;
+    width: 120px; height: 120px;
+    border-radius: 0 0 0 120px;
+    opacity: 0.15;
+  }
+
+  .card-emoji {
+    font-size: 3.5rem;
+    margin-bottom: 1.2rem;
+    display: block;
+    animation: wobble 4s ease-in-out infinite;
+  }
+  @keyframes wobble {
+    0%,100% { transform: rotate(-3deg); }
+    50%      { transform: rotate(4deg) scale(1.05); }
+  }
+
+  .card-tag {
+    display: inline-block;
+    font-family: 'Boogaloo', cursive;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 0.25rem 0.9rem;
+    border-radius: 50px;
+    border: 2px solid var(--ink);
+    margin-bottom: 1rem;
+  }
+
+  .card-title {
+    font-family: 'Boogaloo', cursive;
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.1;
+  }
+
+  .card-desc {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #555;
+    margin-bottom: 1.5rem;
+  }
+
+  .card-link {
+    font-family: 'Boogaloo', cursive;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .card-link .arrow {
+    display: inline-block;
+    transition: transform 0.2s;
+  }
+  .card:hover .arrow { transform: translateX(4px); }
+
+  /* ── FUN FACT STRIP ── */
+  .fun-strip {
+    background: var(--ink);
+    color: var(--pop2);
+    padding: 1.2rem 0;
+    overflow: hidden;
+    position: relative;
+    border-top: 3px solid var(--ink);
+    border-bottom: 3px solid var(--ink);
+  }
+  .fun-strip-inner {
+    display: flex;
+    gap: 3rem;
+    animation: marquee 20s linear infinite;
+    white-space: nowrap;
+    width: max-content;
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+  .fun-strip span {
+    font-family: 'Boogaloo', cursive;
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+  }
+  .fun-strip .sep { color: var(--pop1); }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 3rem 2rem;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+  }
+  .footer-logo {
+    font-family: 'Boogaloo', cursive;
+    font-size: 2.5rem;
+    color: var(--ink);
+    letter-spacing: 2px;
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+  .footer-sub {
+    color: #aaa;
+    font-size: 0.95rem;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── HOVER RIPPLE on CTA ── */
+  .ripple-ring {
+    position: fixed;
+    pointer-events: none;
+    z-index: 3;
+    border-radius: 50%;
+    border: 3px solid var(--pop1);
+    animation: ringOut 0.6s ease-out forwards;
+  }
+  @keyframes ringOut {
+    from { width: 0; height: 0; opacity: 0.8; transform: translate(-50%,-50%); }
+    to   { width: 120px; height: 120px; opacity: 0; transform: translate(-50%,-50%); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    .hero-title .line2::after { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Custom cursor -->
+<div id="cursor">🎯</div>
+
+<!-- Background doodle emojis -->
+<div class="bg-doodle" style="top:8%;left:5%;--d:18s;--tx:20px;--ty:25px;--r0:-10deg;--r1:10deg">⭐</div>
+<div class="bg-doodle" style="top:15%;right:8%;--d:22s;--tx:-15px;--ty:20px;--r0:5deg;--r1:-15deg">🎈</div>
+<div class="bg-doodle" style="top:40%;left:2%;--d:25s;--tx:30px;--ty:-10px;--r0:0deg;--r1:20deg">🌈</div>
+<div class="bg-doodle" style="top:60%;right:3%;--d:19s;--tx:-20px;--ty:30px;--r0:15deg;--r1:-5deg">💥</div>
+<div class="bg-doodle" style="bottom:20%;left:8%;--d:23s;--tx:15px;--ty:-25px;--r0:-5deg;--r1:15deg">🦄</div>
+<div class="bg-doodle" style="bottom:10%;right:10%;--d:17s;--tx:-10px;--ty:-15px;--r0:10deg;--r1:-10deg">✨</div>
+<div class="bg-doodle" style="top:75%;left:45%;--d:21s;--tx:20px;--ty:10px;--r0:0deg;--r1:25deg">🎉</div>
+
+<main>
+  <!-- Header -->
+  <header>
+    <a href="/" class="logo">
+      <span>o</span><span>b</span><span>f</span><span>y</span><div class="logo-dot"></div>
+    </a>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-badge">✨ Made with silly love ✨</div>
+
+    <h1 class="hero-title">
+      <span class="line1">tiny things</span>
+      <span class="line2" data-text="that spark joy">that spark joy</span>
+    </h1>
+
+    <p class="hero-sub">
+      A little corner of the internet for fun, weird, and joyful mini-projects.
+      Starting with one very important mission: keeping toddlers entertained.
+    </p>
+
+    <a href="./toddler" class="hero-cta">
+      <span class="cta-emoji">🎹</span>
+      Try Toddler Mode
+    </a>
+  </section>
+
+  <!-- Marquee strip -->
+  <div class="fun-strip" aria-hidden="true">
+    <div class="fun-strip-inner">
+      <span>🎉 KEYBOARD CHAOS</span><span class="sep">✦</span>
+      <span>🌈 PAINT WITH KEYS</span><span class="sep">✦</span>
+      <span>💥 TODDLER APPROVED</span><span class="sep">✦</span>
+      <span>⭐ ZERO DAMAGE TO YOUR WORK</span><span class="sep">✦</span>
+      <span>🦄 PURE CHAOS MODE</span><span class="sep">✦</span>
+      <span>🎹 EVERY KEY DOES SOMETHING WILD</span><span class="sep">✦</span>
+      <!-- duplicate for seamless loop -->
+      <span>🎉 KEYBOARD CHAOS</span><span class="sep">✦</span>
+      <span>🌈 PAINT WITH KEYS</span><span class="sep">✦</span>
+      <span>💥 TODDLER APPROVED</span><span class="sep">✦</span>
+      <span>⭐ ZERO DAMAGE TO YOUR WORK</span><span class="sep">✦</span>
+      <span>🦄 PURE CHAOS MODE</span><span class="sep">✦</span>
+      <span>🎹 EVERY KEY DOES SOMETHING WILD</span><span class="sep">✦</span>
+    </div>
+  </div>
+
+  <!-- Card section -->
+  <section class="section">
+    <p class="section-label">What's here</p>
+    <h2 class="section-title">The collection so far 🗂️</h2>
+
+    <div class="card-grid">
+      <!-- Toddler Mode card -->
+      <a href="./toddler" class="card">
+        <div class="card-accent" style="background: var(--pop3);"></div>
+        <span class="card-emoji">🎹</span>
+        <span class="card-tag" style="background: var(--pop2);">Interactive</span>
+        <h3 class="card-title">Toddler Mode</h3>
+        <p class="card-desc">
+          Lock your keyboard and every key explodes into color, sound, and chaos.
+          Perfect for tiny humans aged 1–3 who want to "help" you work.
+          Triple-press ESC to escape.
+        </p>
+        <span class="card-link">
+          Launch it <span class="arrow">→</span>
+        </span>
+      </a>
+
+      <!-- Placeholder card -->
+      <div class="card" style="opacity:0.5; cursor: default; pointer-events: none;">
+        <div class="card-accent" style="background: var(--pop5);"></div>
+        <span class="card-emoji" style="animation-delay:1s">🔮</span>
+        <span class="card-tag" style="background: #eee; color: #aaa; border-color: #ddd;">Coming soon</span>
+        <h3 class="card-title">Something fun</h3>
+        <p class="card-desc">
+          Another tiny joyful thing is in the works. No idea what yet, but it'll be good.
+        </p>
+        <span class="card-link" style="color:#bbb">
+          Not yet <span class="arrow">→</span>
+        </span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Footer -->
+<footer>
+  <span class="footer-logo">obfy</span>
+  <p class="footer-sub">made with 🎉 somewhere in Utah</p>
+</footer>
+
+<script>
+  // ── CURSOR ──
+  const cursor = document.getElementById('cursor');
+  const CURSORS = ['🎯','⭐','✨','💫','🎪','🌟','🎨','🔮'];
+  let cx = -100, cy = -100;
+
+  document.addEventListener('mousemove', e => {
+    cx = e.clientX; cy = e.clientY;
+    cursor.style.left = cx + 'px';
+    cursor.style.top  = cy + 'px';
+  });
+
+  // Randomly rotate cursor
+  setInterval(() => {
+    cursor.textContent = CURSORS[Math.floor(Math.random() * CURSORS.length)];
+  }, 2000);
+
+  // ── CLICK RIPPLE ──
+  document.addEventListener('click', e => {
+    const ring = document.createElement('div');
+    ring.className = 'ripple-ring';
+    ring.style.left = e.clientX + 'px';
+    ring.style.top  = e.clientY + 'px';
+    document.body.appendChild(ring);
+    ring.addEventListener('animationend', () => ring.remove());
+  });
+
+  // ── LOGO LETTER JIGGLE ──
+  const logoLetters = document.querySelectorAll('.logo span');
+  logoLetters.forEach((el, i) => {
+    el.style.display = 'inline-block';
+    el.style.transition = `transform 0.2s ${i * 0.05}s`;
+  });
+  document.querySelector('.logo')?.addEventListener('mouseenter', () => {
+    logoLetters.forEach((el, i) => {
+      setTimeout(() => {
+        el.style.transform = `rotate(${(Math.random()-0.5)*20}deg) scale(1.2)`;
+        setTimeout(() => el.style.transform = '', 300);
+      }, i * 60);
+    });
+  });
+
+  // ── HIDE cursor when mouse leaves ──
+  document.addEventListener('mouseleave', () => cursor.style.opacity = '0');
+  document.addEventListener('mouseenter', () => cursor.style.opacity = '1');
+</script>
+
+</body>
+</html>

@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎉 Toddler Mode</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --c1: #FF6B6B; --c2: #FFE66D; --c3: #4ECDC4;
+    --c4: #A8E6CF; --c5: #FF8B94; --c6: #B8B8FF;
+    --c7: #FFD93D; --c8: #6BCB77; --c9: #FF6392;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    font-family: 'Fredoka One', cursive;
+    background: #1a1a2e;
+    cursor: none;
+  }
+
+  /* ── UNLOCK SCREEN ── */
+  #back-link {
+    position: fixed;
+    top: 1.2rem;
+    left: 1.5rem;
+    z-index: 2000;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    letter-spacing: 1px;
+    transition: color 0.2s;
+  }
+  #back-link:hover { color: white; }
+
+  #unlock-screen {
+    position: fixed; inset: 0;
+    background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 1000;
+    transition: opacity 0.6s ease;
+  }
+  #unlock-screen.hidden { opacity: 0; pointer-events: none; }
+
+  .unlock-title {
+    font-size: clamp(2rem, 6vw, 4rem);
+    color: white;
+    text-align: center;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 30px rgba(255,255,255,0.3);
+  }
+  .unlock-sub {
+    font-family: 'Nunito', sans-serif;
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    color: rgba(255,255,255,0.6);
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+  .unlock-btn {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.6rem;
+    padding: 1rem 3rem;
+    background: linear-gradient(135deg, var(--c1), var(--c9));
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 8px 32px rgba(255,107,107,0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+    letter-spacing: 1px;
+  }
+  .unlock-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 12px 40px rgba(255,107,107,0.6);
+  }
+
+  /* ── CANVAS / PLAY AREA ── */
+  #canvas {
+    position: fixed; inset: 0;
+    z-index: 1;
+  }
+
+  /* ── ESCAPE INDICATOR ── */
+  #esc-indicator {
+    position: fixed;
+    bottom: 1.5rem; right: 1.5rem;
+    z-index: 500;
+    display: flex; gap: 6px; align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  #esc-indicator.visible { opacity: 1; }
+  .esc-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    transition: background 0.2s, transform 0.2s;
+  }
+  .esc-dot.lit {
+    background: white;
+    transform: scale(1.4);
+    box-shadow: 0 0 8px white;
+  }
+
+  /* ── FLOATING EMOJI ANIMATIONS ── */
+  .float-emoji {
+    position: fixed;
+    pointer-events: none;
+    z-index: 100;
+    font-size: 3rem;
+    animation: floatUp 1.4s ease-out forwards;
+    user-select: none;
+  }
+  @keyframes floatUp {
+    0%   { transform: translateY(0) scale(0) rotate(0deg); opacity: 1; }
+    30%  { transform: translateY(-40px) scale(1.3) rotate(15deg); opacity: 1; }
+    100% { transform: translateY(-200px) scale(0.5) rotate(-20deg); opacity: 0; }
+  }
+
+  /* ── RIPPLE ── */
+  .ripple {
+    position: fixed;
+    pointer-events: none;
+    z-index: 99;
+    border-radius: 50%;
+    animation: rippleOut 0.7s ease-out forwards;
+  }
+  @keyframes rippleOut {
+    0%   { transform: translate(-50%,-50%) scale(0); opacity: 0.9; }
+    100% { transform: translate(-50%,-50%) scale(6); opacity: 0; }
+  }
+
+  /* ── KEY LABEL POP ── */
+  .key-label {
+    position: fixed;
+    pointer-events: none;
+    z-index: 101;
+    font-size: clamp(2rem, 8vw, 5rem);
+    color: white;
+    font-family: 'Fredoka One', cursive;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    animation: keyPop 0.9s cubic-bezier(.36,1.6,.6,1) forwards;
+    user-select: none;
+  }
+  @keyframes keyPop {
+    0%   { transform: translate(-50%,-50%) scale(0) rotate(-10deg); opacity: 1; }
+    50%  { transform: translate(-50%,-50%) scale(1.2) rotate(5deg); opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(0.8) rotate(0deg); opacity: 0; }
+  }
+
+  /* ── STAR BURST ── */
+  .star {
+    position: fixed;
+    pointer-events: none;
+    z-index: 98;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    animation: starFly var(--dur) ease-out forwards;
+  }
+  @keyframes starFly {
+    0%   { transform: translate(0,0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+  }
+
+  /* ── SCREEN FLASH ── */
+  #flash {
+    position: fixed; inset: 0;
+    z-index: 90;
+    pointer-events: none;
+    opacity: 0;
+  }
+  #flash.bang {
+    animation: flashBang 0.3s ease-out forwards;
+  }
+  @keyframes flashBang {
+    0%   { opacity: 0.35; }
+    100% { opacity: 0; }
+  }
+
+  /* ── CUSTOM CURSOR ── */
+  #cursor {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    font-size: 2rem;
+    transform: translate(-50%, -50%);
+    transition: none;
+    user-select: none;
+  }
+
+  /* ── PAINT SPLAT ── */
+  .splat {
+    position: fixed;
+    pointer-events: none;
+    z-index: 95;
+    border-radius: 50%;
+    animation: splatAnim 0.5s ease-out forwards;
+  }
+  @keyframes splatAnim {
+    0%   { transform: translate(-50%,-50%) scale(0); opacity: 1; }
+    60%  { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(1.1); opacity: 0.85; }
+  }
+
+  /* ── BACKGROUND BLOBS ── */
+  #bg-canvas {
+    position: fixed; inset: 0;
+    z-index: 0;
+  }
+</style>
+</head>
+<body>
+
+<a href="/" id="back-link">← obfy</a>
+
+<!-- Background canvas for painting -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- Screen flash overlay -->
+<div id="flash"></div>
+
+<!-- Custom cursor -->
+<div id="cursor">⭐</div>
+
+<!-- ESC triple-click dots -->
+<div id="esc-indicator">
+  <div class="esc-dot" id="d0"></div>
+  <div class="esc-dot" id="d1"></div>
+  <div class="esc-dot" id="d2"></div>
+</div>
+
+<!-- Unlock screen -->
+<div id="unlock-screen">
+  <div class="unlock-title">🎉 Toddler Mode</div>
+  <div class="unlock-sub">Press every key — make beautiful chaos!<br>Triple-press ESC to unlock.</div>
+  <button class="unlock-btn" id="lock-btn">🔒 Enter Toddler Mode</button>
+</div>
+
+<script>
+// ─────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────
+let locked = false;
+let escPresses = 0;
+let escTimer = null;
+let mouseX = window.innerWidth / 2;
+let mouseY = window.innerHeight / 2;
+
+// Paint canvas setup
+const bgCanvas = document.getElementById('bg-canvas');
+const ctx = bgCanvas.getContext('2d');
+bgCanvas.width = window.innerWidth;
+bgCanvas.height = window.innerHeight;
+
+// Fill initial background
+ctx.fillStyle = '#1a1a2e';
+ctx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+window.addEventListener('resize', () => {
+  const imgData = ctx.getImageData(0, 0, bgCanvas.width, bgCanvas.height);
+  bgCanvas.width = window.innerWidth;
+  bgCanvas.height = window.innerHeight;
+  ctx.putImageData(imgData, 0, 0);
+});
+
+// ─────────────────────────────────────────
+//  COLOUR & EMOJI POOLS
+// ─────────────────────────────────────────
+const COLORS = [
+  '#FF6B6B','#FFE66D','#4ECDC4','#A8E6CF','#FF8B94',
+  '#B8B8FF','#FFD93D','#6BCB77','#FF6392','#FFA07A',
+  '#87CEEB','#DDA0DD','#98FB98','#F0E68C','#FF69B4',
+];
+
+const EMOJIS = [
+  '🌟','💥','🎉','🌈','🦄','🐸','🍭','🎈',
+  '🦋','🌸','⚡','🔥','💫','🎊','🐙','🦖',
+  '🍕','🎸','🌺','🐳','💎','🦊','🎀','🐝',
+  '🍦','🎯','🌙','☀️','🍩','🦸','🐬','🎪',
+];
+
+const CURSORS = ['⭐','🌟','✨','💫','🎯','🔮','🌈','⚡'];
+
+const rand = (a, b) => Math.random() * (b - a) + a;
+const randInt = (a, b) => Math.floor(rand(a, b));
+const randItem = arr => arr[randInt(0, arr.length)];
+const randColor = () => randItem(COLORS);
+
+// ─────────────────────────────────────────
+//  AUDIO ENGINE (Web Audio API)
+// ─────────────────────────────────────────
+let audioCtx = null;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+// Map keys to fun note frequencies
+const NOTE_MAP = {};
+const noteFreqs = [261.63,293.66,329.63,349.23,392,440,493.88,523.25,587.33,659.25,698.46,783.99];
+'abcdefghijklmnopqrstuvwxyz0123456789'.split('').forEach((k,i) => {
+  NOTE_MAP[k] = noteFreqs[i % noteFreqs.length];
+});
+
+function playTone(freq, type = 'sine', duration = 0.35) {
+  try {
+    const ac = getAudio();
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.connect(gain);
+    gain.connect(ac.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ac.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(freq * 0.5, ac.currentTime + duration);
+    gain.gain.setValueAtTime(0.3, ac.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + duration);
+    osc.start(ac.currentTime);
+    osc.stop(ac.currentTime + duration);
+  } catch(e) {}
+}
+
+function playDrum() {
+  try {
+    const ac = getAudio();
+    const buf = ac.createBuffer(1, ac.sampleRate * 0.15, ac.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i/data.length, 3);
+    }
+    const src = ac.createBufferSource();
+    src.buffer = buf;
+    const gain = ac.createGain();
+    gain.gain.setValueAtTime(0.5, ac.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.15);
+    src.connect(gain);
+    gain.connect(ac.destination);
+    src.start();
+  } catch(e) {}
+}
+
+function playBloop(freq = 300) {
+  try {
+    const ac = getAudio();
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.connect(gain);
+    gain.connect(ac.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq * 2, ac.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(freq, ac.currentTime + 0.2);
+    gain.gain.setValueAtTime(0.4, ac.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.3);
+    osc.start();
+    osc.stop(ac.currentTime + 0.3);
+  } catch(e) {}
+}
+
+function playZap() {
+  try {
+    const ac = getAudio();
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.connect(gain);
+    gain.connect(ac.destination);
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(1200, ac.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(80, ac.currentTime + 0.25);
+    gain.gain.setValueAtTime(0.2, ac.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.25);
+    osc.start();
+    osc.stop(ac.currentTime + 0.25);
+  } catch(e) {}
+}
+
+const SOUNDS = [
+  () => playTone(randItem(noteFreqs), 'sine'),
+  () => playTone(randItem(noteFreqs), 'triangle'),
+  () => playTone(randItem(noteFreqs) * 2, 'square', 0.15),
+  () => playDrum(),
+  () => playBloop(randInt(200, 600)),
+  () => playZap(),
+];
+
+// ─────────────────────────────────────────
+//  EFFECTS
+// ─────────────────────────────────────────
+function spawnEmoji(x, y) {
+  const el = document.createElement('div');
+  el.className = 'float-emoji';
+  el.textContent = randItem(EMOJIS);
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  el.style.fontSize = randInt(28, 64) + 'px';
+  document.body.appendChild(el);
+  el.addEventListener('animationend', () => el.remove());
+}
+
+function spawnKeyLabel(x, y, key) {
+  const el = document.createElement('div');
+  el.className = 'key-label';
+  const label = key.length === 1 ? key.toUpperCase() : key === ' ' ? '␣' : key;
+  el.textContent = label;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  el.style.color = randColor();
+  el.style.fontSize = randInt(40, 100) + 'px';
+  document.body.appendChild(el);
+  el.addEventListener('animationend', () => el.remove());
+}
+
+function spawnRipple(x, y, color) {
+  const el = document.createElement('div');
+  el.className = 'ripple';
+  const size = randInt(60, 160);
+  el.style.cssText = `
+    left:${x}px; top:${y}px;
+    width:${size}px; height:${size}px;
+    background:${color};
+    opacity:0.7;
+  `;
+  document.body.appendChild(el);
+  el.addEventListener('animationend', () => el.remove());
+}
+
+function spawnStars(x, y, color) {
+  const count = randInt(8, 16);
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'star';
+    const angle = (i / count) * Math.PI * 2;
+    const dist = randInt(60, 180);
+    const tx = Math.cos(angle) * dist;
+    const ty = Math.sin(angle) * dist;
+    const dur = rand(0.4, 0.9) + 's';
+    el.style.cssText = `
+      left:${x}px; top:${y}px;
+      width:${randInt(6,14)}px; height:${randInt(6,14)}px;
+      background:${color};
+      --tx:${tx}px; --ty:${ty}px; --dur:${dur};
+    `;
+    document.body.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
+  }
+}
+
+function paintSplat(x, y, color) {
+  // Paint on canvas permanently
+  const radius = randInt(20, 80);
+  const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+  gradient.addColorStop(0, color + 'dd');
+  gradient.addColorStop(0.5, color + '99');
+  gradient.addColorStop(1, color + '00');
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Extra blobs for chaos
+  const blobs = randInt(2, 6);
+  for (let i = 0; i < blobs; i++) {
+    const bx = x + rand(-radius, radius);
+    const by = y + rand(-radius, radius);
+    const br = rand(5, radius * 0.7);
+    const bg = ctx.createRadialGradient(bx, by, 0, bx, by, br);
+    bg.addColorStop(0, color + 'bb');
+    bg.addColorStop(1, color + '00');
+    ctx.fillStyle = bg;
+    ctx.beginPath();
+    ctx.arc(bx, by, br, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function flashScreen(color) {
+  const el = document.getElementById('flash');
+  el.style.background = color;
+  el.classList.remove('bang');
+  void el.offsetWidth;
+  el.classList.add('bang');
+}
+
+// ─────────────────────────────────────────
+//  EFFECT COMBOS — pick a random chaos burst
+// ─────────────────────────────────────────
+const EFFECTS = [
+  // Emoji shower
+  (x, y, key, color) => {
+    for (let i = 0; i < randInt(2,5); i++) {
+      setTimeout(() => spawnEmoji(x + rand(-80,80), y + rand(-40,40)), i * 80);
+    }
+    spawnRipple(x, y, color);
+  },
+  // Star burst + label
+  (x, y, key, color) => {
+    spawnStars(x, y, color);
+    spawnKeyLabel(x, y, key);
+  },
+  // Big ripple + emoji
+  (x, y, key, color) => {
+    spawnRipple(x, y, color);
+    spawnRipple(x + rand(-30,30), y + rand(-30,30), randColor());
+    spawnEmoji(x, y - 30);
+  },
+  // Paint + stars + label
+  (x, y, key, color) => {
+    paintSplat(x, y, color);
+    spawnStars(x, y, color);
+    spawnKeyLabel(x, y, key);
+  },
+  // Flash + shower
+  (x, y, key, color) => {
+    flashScreen(color);
+    for (let i = 0; i < 3; i++) spawnEmoji(x + rand(-100,100), y + rand(-60,60));
+  },
+  // Multi-ripple cascade
+  (x, y, key, color) => {
+    for (let i = 0; i < 4; i++) {
+      setTimeout(() => spawnRipple(x + rand(-40,40), y + rand(-40,40), randColor()), i * 100);
+    }
+  },
+  // Confetti star burst
+  (x, y, key, color) => {
+    spawnStars(x, y, color);
+    spawnStars(x + rand(-30,30), y + rand(-30,30), randColor());
+    paintSplat(x, y, color);
+  },
+  // Label + paint
+  (x, y, key, color) => {
+    spawnKeyLabel(x, y, key);
+    paintSplat(x, y, color);
+    spawnEmoji(x + rand(-50,50), y - 50);
+  },
+];
+
+// ─────────────────────────────────────────
+//  CURSOR
+// ─────────────────────────────────────────
+const cursorEl = document.getElementById('cursor');
+let cursorEmoji = '⭐';
+
+document.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  cursorEl.style.left = mouseX + 'px';
+  cursorEl.style.top = mouseY + 'px';
+});
+
+function rotateCursor() {
+  cursorEmoji = randItem(CURSORS);
+  cursorEl.textContent = cursorEmoji;
+}
+
+// ─────────────────────────────────────────
+//  MAIN KEYDOWN HANDLER
+// ─────────────────────────────────────────
+function handleKey(e) {
+  if (!locked) return;
+
+  // ESC triple-press to unlock
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    escPresses++;
+    document.getElementById('d' + (escPresses - 1))?.classList.add('lit');
+    document.getElementById('esc-indicator').classList.add('visible');
+
+    clearTimeout(escTimer);
+    if (escPresses >= 3) {
+      unlock();
+      return;
+    }
+    escTimer = setTimeout(() => {
+      escPresses = 0;
+      [0,1,2].forEach(i => document.getElementById('d'+i)?.classList.remove('lit'));
+      document.getElementById('esc-indicator').classList.remove('visible');
+    }, 1500);
+    return;
+  }
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  // Randomise position near mouse with some scatter
+  const x = mouseX + rand(-60, 60);
+  const y = mouseY + rand(-60, 60);
+  const color = randColor();
+  const key = e.key;
+
+  // Pick random effect combo
+  const effect = randItem(EFFECTS);
+  effect(x, y, key, color);
+
+  // Play random sound
+  randItem(SOUNDS)();
+
+  // Change cursor sometimes
+  if (Math.random() < 0.3) rotateCursor();
+}
+
+document.addEventListener('keydown', handleKey);
+
+// ─────────────────────────────────────────
+//  MOUSE CLICK — paint when locked
+// ─────────────────────────────────────────
+document.addEventListener('click', (e) => {
+  if (!locked) return;
+  const color = randColor();
+  paintSplat(e.clientX, e.clientY, color);
+  spawnEmoji(e.clientX, e.clientY - 20);
+  spawnStars(e.clientX, e.clientY, color);
+  randItem(SOUNDS)();
+  rotateCursor();
+});
+
+// ─────────────────────────────────────────
+//  LOCK / UNLOCK
+// ─────────────────────────────────────────
+function lock() {
+  locked = true;
+  document.getElementById('unlock-screen').classList.add('hidden');
+  document.body.style.cursor = 'none';
+  cursorEl.style.display = 'block';
+
+  // Resume audio context on first interaction
+  try { getAudio().resume(); } catch(e) {}
+
+  // Warm welcome burst
+  setTimeout(() => {
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+    for (let i = 0; i < 8; i++) {
+      setTimeout(() => {
+        const x = cx + rand(-200, 200);
+        const y = cy + rand(-150, 150);
+        spawnEmoji(x, y);
+        paintSplat(x, y, randColor());
+      }, i * 100);
+    }
+  }, 300);
+}
+
+function unlock() {
+  locked = false;
+  escPresses = 0;
+  [0,1,2].forEach(i => {
+    const d = document.getElementById('d'+i);
+    if (d) d.classList.remove('lit');
+  });
+  document.getElementById('esc-indicator').classList.remove('visible');
+  document.body.style.cursor = 'default';
+  cursorEl.style.display = 'none';
+
+  const screen = document.getElementById('unlock-screen');
+  screen.classList.remove('hidden');
+  document.getElementById('lock-btn').textContent = '🔒 Lock Again';
+}
+
+document.getElementById('lock-btn').addEventListener('click', lock);
+
+// ─────────────────────────────────────────
+//  IDLE SPARKLE — subtle canvas animation while locked
+// ─────────────────────────────────────────
+let lastSparkle = 0;
+function idleLoop(ts) {
+  if (locked && ts - lastSparkle > 2000) {
+    lastSparkle = ts;
+    // subtle shimmer on painted areas
+    const x = rand(0, bgCanvas.width);
+    const y = rand(0, bgCanvas.height);
+    ctx.fillStyle = 'rgba(255,255,255,0.03)';
+    ctx.beginPath();
+    ctx.arc(x, y, rand(2, 8), 0, Math.PI * 2);
+    ctx.fill();
+  }
+  requestAnimationFrame(idleLoop);
+}
+requestAnimationFrame(idleLoop);
+</script>
+</body>
+</html>
