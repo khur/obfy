@@ -211,6 +211,111 @@
     100% { transform: translate(-50%,-50%) scale(1.1); opacity: 0.85; }
   }
 
+  /* ── DRAGON ── */
+  .dragon {
+    position: fixed;
+    pointer-events: none;
+    z-index: 200;
+    font-size: 5rem;
+    user-select: none;
+    filter: drop-shadow(0 0 20px rgba(255,100,0,0.6));
+    animation: dragonFly var(--dur) linear forwards;
+  }
+  @keyframes dragonFly {
+    0%   { transform: translate(0, 0) scaleX(var(--dir)) rotate(0deg); opacity: 1; }
+    15%  { transform: translate(calc(var(--dx) * 0.15), -80px) scaleX(var(--dir)) rotate(-8deg); }
+    30%  { transform: translate(calc(var(--dx) * 0.3), -20px) scaleX(var(--dir)) rotate(5deg); }
+    50%  { transform: translate(calc(var(--dx) * 0.5), -100px) scaleX(var(--dir)) rotate(-5deg); }
+    70%  { transform: translate(calc(var(--dx) * 0.7), -40px) scaleX(var(--dir)) rotate(3deg); }
+    85%  { transform: translate(calc(var(--dx) * 0.85), -90px) scaleX(var(--dir)) rotate(-3deg); }
+    100% { transform: translate(var(--dx), -60px) scaleX(var(--dir)) rotate(0deg); opacity: 0; }
+  }
+  .dragon-flame {
+    position: fixed;
+    pointer-events: none;
+    z-index: 199;
+    font-size: 2rem;
+    user-select: none;
+    animation: flameFloat 0.6s ease-out forwards;
+  }
+  @keyframes flameFloat {
+    0%   { transform: scale(1); opacity: 0.9; }
+    100% { transform: scale(0.3) translateY(-40px); opacity: 0; }
+  }
+
+  /* ── FIREWORKS ── */
+  .firework-trail {
+    position: fixed;
+    pointer-events: none;
+    z-index: 180;
+    width: 4px;
+    border-radius: 2px;
+    animation: trailUp var(--dur) ease-out forwards;
+  }
+  @keyframes trailUp {
+    0%   { transform: translateY(0); opacity: 1; height: 20px; }
+    80%  { opacity: 1; }
+    100% { transform: translateY(var(--ty)); opacity: 0; height: 4px; }
+  }
+  .firework-spark {
+    position: fixed;
+    pointer-events: none;
+    z-index: 181;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    animation: sparkBurst var(--dur) ease-out forwards;
+  }
+  @keyframes sparkBurst {
+    0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+    40%  { opacity: 1; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+  }
+
+  /* ── PORTAL SWIRL ── */
+  .portal {
+    position: fixed;
+    pointer-events: none;
+    z-index: 190;
+    border-radius: 50%;
+    border: 4px solid transparent;
+    animation: portalSpin var(--dur) ease-in-out forwards;
+  }
+  @keyframes portalSpin {
+    0%   { transform: translate(-50%,-50%) scale(0) rotate(0deg); opacity: 0; }
+    20%  { opacity: 0.9; }
+    50%  { transform: translate(-50%,-50%) scale(1) rotate(360deg); opacity: 0.8; }
+    80%  { transform: translate(-50%,-50%) scale(1.1) rotate(600deg); opacity: 0.5; }
+    100% { transform: translate(-50%,-50%) scale(0.2) rotate(900deg); opacity: 0; }
+  }
+  .portal-ring {
+    position: fixed;
+    pointer-events: none;
+    z-index: 189;
+    border-radius: 50%;
+    border: 3px solid;
+    animation: ringSpin var(--dur) linear forwards;
+    opacity: 0;
+  }
+  @keyframes ringSpin {
+    0%   { transform: translate(-50%,-50%) scale(0) rotate(0deg); opacity: 0; }
+    10%  { opacity: 0.7; }
+    50%  { transform: translate(-50%,-50%) scale(var(--s)) rotate(var(--rot)); opacity: 0.5; }
+    100% { transform: translate(-50%,-50%) scale(0) rotate(calc(var(--rot) * 2)); opacity: 0; }
+  }
+  .portal-particle {
+    position: fixed;
+    pointer-events: none;
+    z-index: 191;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    animation: portalOrbit var(--dur) ease-in-out forwards;
+  }
+  @keyframes portalOrbit {
+    0%   { transform: translate(0,0) scale(1); opacity: 0.9; }
+    50%  { transform: translate(var(--mx), var(--my)) scale(1.5); opacity: 0.7; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+  }
+
   /* ── BACKGROUND BLOBS ── */
   #bg-canvas {
     position: fixed; inset: 0;
@@ -588,9 +693,9 @@ function handleKey(e) {
   e.preventDefault();
   e.stopPropagation();
 
-  // Randomise position near mouse with some scatter
-  const x = mouseX + rand(-60, 60);
-  const y = mouseY + rand(-60, 60);
+  // Keyboard effects appear at random screen positions
+  const x = rand(80, window.innerWidth - 80);
+  const y = rand(80, window.innerHeight - 80);
   const color = randColor();
   const key = e.key;
 
@@ -636,6 +741,9 @@ function lock() {
   // Resume audio context on first interaction
   try { getAudio().resume(); } catch(e) {}
 
+  // Start ambient spectacles
+  scheduleAmbient();
+
   // Warm welcome burst
   setTimeout(() => {
     const cx = window.innerWidth / 2;
@@ -662,6 +770,9 @@ function unlock() {
   document.body.style.cursor = 'default';
   cursorEl.style.display = 'none';
 
+  // Stop ambient events
+  stopAmbient();
+
   // Exit fullscreen
   try { if (document.fullscreenElement) document.exitFullscreen(); } catch(e) {}
 
@@ -680,7 +791,6 @@ let lastSparkle = 0;
 function idleLoop(ts) {
   if (locked && ts - lastSparkle > 2000) {
     lastSparkle = ts;
-    // subtle shimmer on painted areas
     const x = rand(0, bgCanvas.width);
     const y = rand(0, bgCanvas.height);
     ctx.fillStyle = 'rgba(255,255,255,0.03)';
@@ -691,6 +801,265 @@ function idleLoop(ts) {
   requestAnimationFrame(idleLoop);
 }
 requestAnimationFrame(idleLoop);
+
+// ─────────────────────────────────────────
+//  DRAGON FLY-BY
+// ─────────────────────────────────────────
+const DRAGONS = ['🐉','🐲','🦖','🔥'];
+
+function spawnDragon() {
+  if (!locked) return;
+  const fromLeft = Math.random() > 0.5;
+  const el = document.createElement('div');
+  el.className = 'dragon';
+  el.textContent = randItem(DRAGONS);
+  const y = rand(50, window.innerHeight * 0.5);
+  const dur = rand(3, 5);
+  const dx = window.innerWidth + 200;
+
+  el.style.cssText = `
+    left: ${fromLeft ? -120 : window.innerWidth + 20}px;
+    top: ${y}px;
+    font-size: ${randInt(50, 90)}px;
+    --dx: ${fromLeft ? dx : -dx}px;
+    --dir: ${fromLeft ? 1 : -1};
+    --dur: ${dur}s;
+  `;
+  document.body.appendChild(el);
+
+  // Drop flames along the path
+  let flameCount = 0;
+  const flameInterval = setInterval(() => {
+    if (!el.parentNode || flameCount > 12) { clearInterval(flameInterval); return; }
+    const rect = el.getBoundingClientRect();
+    if (rect.left < -200 || rect.left > window.innerWidth + 200) return;
+    const flame = document.createElement('div');
+    flame.className = 'dragon-flame';
+    flame.textContent = randItem(['🔥','💨','✨','💫']);
+    flame.style.left = (rect.left + rect.width / 2 + rand(-30, 30)) + 'px';
+    flame.style.top = (rect.top + rect.height / 2 + rand(-10, 20)) + 'px';
+    document.body.appendChild(flame);
+    flame.addEventListener('animationend', () => flame.remove());
+    flameCount++;
+  }, 200);
+
+  // Play whoosh sound
+  try {
+    const ac = getAudio();
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.connect(gain); gain.connect(ac.destination);
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(150, ac.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(80, ac.currentTime + 1.5);
+    gain.gain.setValueAtTime(0.15, ac.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 1.5);
+    osc.start(); osc.stop(ac.currentTime + 1.5);
+  } catch(e) {}
+
+  el.addEventListener('animationend', () => el.remove());
+}
+
+// ─────────────────────────────────────────
+//  FIREWORKS
+// ─────────────────────────────────────────
+function spawnFirework() {
+  if (!locked) return;
+  const x = rand(window.innerWidth * 0.1, window.innerWidth * 0.9);
+  const launchY = window.innerHeight;
+  const burstY = rand(window.innerHeight * 0.15, window.innerHeight * 0.4);
+  const color = randColor();
+  const riseDur = rand(0.6, 1);
+
+  // Trail going up
+  const trail = document.createElement('div');
+  trail.className = 'firework-trail';
+  trail.style.cssText = `
+    left: ${x}px; top: ${launchY}px;
+    background: ${color};
+    --ty: ${-(launchY - burstY)}px;
+    --dur: ${riseDur}s;
+  `;
+  document.body.appendChild(trail);
+  trail.addEventListener('animationend', () => trail.remove());
+
+  // Whistle sound
+  try {
+    const ac = getAudio();
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.connect(gain); gain.connect(ac.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(400, ac.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1200, ac.currentTime + riseDur * 0.8);
+    gain.gain.setValueAtTime(0.12, ac.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + riseDur);
+    osc.start(); osc.stop(ac.currentTime + riseDur);
+  } catch(e) {}
+
+  // Burst after rise
+  setTimeout(() => {
+    if (!locked) return;
+    const sparkCount = randInt(20, 40);
+    for (let i = 0; i < sparkCount; i++) {
+      const spark = document.createElement('div');
+      spark.className = 'firework-spark';
+      const angle = (i / sparkCount) * Math.PI * 2 + rand(-0.2, 0.2);
+      const dist = rand(40, 160);
+      const sparkColor = Math.random() > 0.3 ? color : randColor();
+      const dur = rand(0.5, 1.2);
+      spark.style.cssText = `
+        left: ${x}px; top: ${burstY}px;
+        background: ${sparkColor};
+        box-shadow: 0 0 6px ${sparkColor};
+        width: ${randInt(3,8)}px; height: ${randInt(3,8)}px;
+        --tx: ${Math.cos(angle) * dist}px;
+        --ty: ${Math.sin(angle) * dist + rand(20, 60)}px;
+        --dur: ${dur}s;
+      `;
+      document.body.appendChild(spark);
+      spark.addEventListener('animationend', () => spark.remove());
+    }
+
+    // Paint on canvas
+    paintSplat(x, burstY, color);
+    flashScreen(color);
+
+    // Boom sound
+    try {
+      const ac = getAudio();
+      const buf = ac.createBuffer(1, ac.sampleRate * 0.4, ac.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2);
+      }
+      const src = ac.createBufferSource();
+      src.buffer = buf;
+      const gain = ac.createGain();
+      gain.gain.setValueAtTime(0.4, ac.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.4);
+      src.connect(gain); gain.connect(ac.destination);
+      src.start();
+    } catch(e) {}
+  }, riseDur * 1000);
+}
+
+// ─────────────────────────────────────────
+//  PORTAL SWIRL
+// ─────────────────────────────────────────
+function spawnPortal() {
+  if (!locked) return;
+  const x = rand(window.innerWidth * 0.15, window.innerWidth * 0.85);
+  const y = rand(window.innerHeight * 0.15, window.innerHeight * 0.85);
+  const dur = rand(3, 5);
+  const size = randInt(100, 250);
+  const color1 = randColor();
+  const color2 = randColor();
+  const color3 = randColor();
+
+  // Main portal disc
+  const portal = document.createElement('div');
+  portal.className = 'portal';
+  portal.style.cssText = `
+    left: ${x}px; top: ${y}px;
+    width: ${size}px; height: ${size}px;
+    background: conic-gradient(${color1}, ${color2}, ${color3}, ${color1});
+    box-shadow: 0 0 40px ${color1}88, 0 0 80px ${color2}44, inset 0 0 30px rgba(0,0,0,0.5);
+    --dur: ${dur}s;
+  `;
+  document.body.appendChild(portal);
+  portal.addEventListener('animationend', () => portal.remove());
+
+  // Orbiting rings
+  for (let r = 0; r < 3; r++) {
+    const ring = document.createElement('div');
+    ring.className = 'portal-ring';
+    const rSize = size * (0.6 + r * 0.3);
+    const ringColor = randColor();
+    ring.style.cssText = `
+      left: ${x}px; top: ${y}px;
+      width: ${rSize}px; height: ${rSize}px;
+      border-color: ${ringColor};
+      box-shadow: 0 0 15px ${ringColor}66;
+      --dur: ${dur}s;
+      --s: ${1 + r * 0.3};
+      --rot: ${360 + r * 180}deg;
+      animation-delay: ${r * 0.15}s;
+    `;
+    document.body.appendChild(ring);
+    ring.addEventListener('animationend', () => ring.remove());
+  }
+
+  // Orbiting particles
+  const particleCount = randInt(10, 20);
+  for (let i = 0; i < particleCount; i++) {
+    const p = document.createElement('div');
+    p.className = 'portal-particle';
+    const angle = (i / particleCount) * Math.PI * 2;
+    const orbitR = size * 0.6;
+    const pColor = randItem([color1, color2, color3]);
+    p.style.cssText = `
+      left: ${x}px; top: ${y}px;
+      background: ${pColor};
+      box-shadow: 0 0 8px ${pColor};
+      --mx: ${Math.cos(angle + 2) * orbitR * 0.5}px;
+      --my: ${Math.sin(angle + 2) * orbitR * 0.5}px;
+      --tx: ${Math.cos(angle) * orbitR}px;
+      --ty: ${Math.sin(angle) * orbitR}px;
+      --dur: ${dur * rand(0.6, 1)}s;
+      animation-delay: ${rand(0, dur * 0.3)}s;
+    `;
+    document.body.appendChild(p);
+    p.addEventListener('animationend', () => p.remove());
+  }
+
+  // Eerie hum sound
+  try {
+    const ac = getAudio();
+    const osc1 = ac.createOscillator();
+    const osc2 = ac.createOscillator();
+    const gain = ac.createGain();
+    osc1.connect(gain); osc2.connect(gain); gain.connect(ac.destination);
+    osc1.type = 'sine';
+    osc2.type = 'triangle';
+    osc1.frequency.setValueAtTime(120, ac.currentTime);
+    osc1.frequency.exponentialRampToValueAtTime(200, ac.currentTime + dur * 0.5);
+    osc1.frequency.exponentialRampToValueAtTime(80, ac.currentTime + dur);
+    osc2.frequency.setValueAtTime(123, ac.currentTime);
+    osc2.frequency.exponentialRampToValueAtTime(203, ac.currentTime + dur * 0.5);
+    osc2.frequency.exponentialRampToValueAtTime(83, ac.currentTime + dur);
+    gain.gain.setValueAtTime(0.001, ac.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.15, ac.currentTime + dur * 0.3);
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
+    osc1.start(); osc2.start();
+    osc1.stop(ac.currentTime + dur); osc2.stop(ac.currentTime + dur);
+  } catch(e) {}
+
+  // Paint glow on canvas
+  paintSplat(x, y, color1);
+}
+
+// ─────────────────────────────────────────
+//  AMBIENT EVENT TIMER — random spectacles
+// ─────────────────────────────────────────
+let ambientTimer = null;
+
+function scheduleAmbient() {
+  if (!locked) return;
+  const delay = rand(3000, 8000);
+  ambientTimer = setTimeout(() => {
+    if (!locked) return;
+    const roll = Math.random();
+    if (roll < 0.33) spawnDragon();
+    else if (roll < 0.66) { spawnFirework(); setTimeout(spawnFirework, rand(300, 800)); }
+    else spawnPortal();
+    scheduleAmbient();
+  }, delay);
+}
+
+function stopAmbient() {
+  if (ambientTimer) { clearTimeout(ambientTimer); ambientTimer = null; }
+}
 </script>
 </body>
 </html>
