@@ -316,6 +316,117 @@
     100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
   }
 
+  /* ── RAINBOW WAVE ── */
+  .rainbow-wave {
+    position: fixed;
+    pointer-events: none;
+    z-index: 85;
+    height: 8px;
+    border-radius: 4px;
+    animation: waveSlide var(--dur) ease-out forwards;
+  }
+  @keyframes waveSlide {
+    0%   { transform: scaleX(0); opacity: 0.9; }
+    40%  { transform: scaleX(1); opacity: 0.8; }
+    100% { transform: scaleX(1.2); opacity: 0; }
+  }
+
+  /* ── BOUNCING BALL ── */
+  .bounce-ball {
+    position: fixed;
+    pointer-events: none;
+    z-index: 150;
+    font-size: 3rem;
+    user-select: none;
+    animation: ballBounce var(--dur) ease-in forwards;
+  }
+  @keyframes ballBounce {
+    0%   { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+    20%  { transform: translate(var(--x1), var(--y1)) rotate(120deg); }
+    40%  { transform: translate(var(--x2), var(--y2)) rotate(240deg); }
+    60%  { transform: translate(var(--x3), var(--y3)) rotate(360deg); }
+    80%  { transform: translate(var(--x4), var(--y4)) rotate(480deg); opacity: 0.6; }
+    100% { transform: translate(var(--x5), var(--y5)) rotate(600deg); opacity: 0; }
+  }
+
+  /* ── METEOR ── */
+  .meteor {
+    position: fixed;
+    pointer-events: none;
+    z-index: 160;
+    width: 6px;
+    border-radius: 3px;
+    animation: meteorFall var(--dur) linear forwards;
+    box-shadow: 0 0 10px var(--color), 0 0 30px var(--color);
+  }
+  @keyframes meteorFall {
+    0%   { transform: translate(0, 0) rotate(var(--angle)); opacity: 1; height: 40px; }
+    100% { transform: translate(var(--tx), var(--ty)) rotate(var(--angle)); opacity: 0; height: 80px; }
+  }
+
+  /* ── LASER ── */
+  .laser {
+    position: fixed;
+    pointer-events: none;
+    z-index: 170;
+    height: 4px;
+    animation: laserShoot 0.4s ease-out forwards;
+    box-shadow: 0 0 10px var(--color), 0 0 20px var(--color), 0 0 40px var(--color);
+  }
+  @keyframes laserShoot {
+    0%   { transform: scaleX(0); transform-origin: left; opacity: 1; }
+    30%  { transform: scaleX(1); opacity: 1; }
+    100% { transform: scaleX(1); opacity: 0; }
+  }
+
+  /* ── EMOJI RAIN ── */
+  .emoji-rain {
+    position: fixed;
+    pointer-events: none;
+    z-index: 105;
+    font-size: 2rem;
+    user-select: none;
+    animation: rainDrop var(--dur) linear forwards;
+  }
+  @keyframes rainDrop {
+    0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+    80%  { opacity: 0.8; }
+    100% { transform: translateY(var(--fall)) rotate(var(--rot)); opacity: 0; }
+  }
+
+  /* ── SCREEN SHAKE ── */
+  .shaking {
+    animation: screenShake 0.4s ease-out;
+  }
+  @keyframes screenShake {
+    0%   { transform: translate(0, 0); }
+    10%  { transform: translate(-8px, 6px); }
+    20%  { transform: translate(6px, -8px); }
+    30%  { transform: translate(-6px, 4px); }
+    40%  { transform: translate(4px, -6px); }
+    50%  { transform: translate(-4px, 2px); }
+    60%  { transform: translate(2px, -4px); }
+    70%  { transform: translate(-2px, 2px); }
+    80%  { transform: translate(2px, -2px); }
+    100% { transform: translate(0, 0); }
+  }
+
+  /* ── SPIRAL TEXT ── */
+  .spiral-char {
+    position: fixed;
+    pointer-events: none;
+    z-index: 110;
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    user-select: none;
+    animation: spiralOut var(--dur) ease-out forwards;
+  }
+  @keyframes spiralOut {
+    0%   { transform: translate(0,0) scale(0) rotate(0deg); opacity: 1; }
+    50%  { transform: translate(var(--mx), var(--my)) scale(1.5) rotate(360deg); opacity: 0.8; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(0) rotate(720deg); opacity: 0; }
+  }
+
   /* ── BACKGROUND BLOBS ── */
   #bg-canvas {
     position: fixed; inset: 0;
@@ -594,55 +705,246 @@ function flashScreen(color) {
 }
 
 // ─────────────────────────────────────────
+//  NEW CHAOS EFFECTS
+// ─────────────────────────────────────────
+function spawnRainbowWave(y) {
+  const colors = ['#FF0000','#FF7700','#FFFF00','#00FF00','#0077FF','#8800FF','#FF00FF'];
+  colors.forEach((c, i) => {
+    const el = document.createElement('div');
+    el.className = 'rainbow-wave';
+    el.style.cssText = `
+      left: 0; top: ${y + i * 10}px;
+      width: 100vw;
+      background: ${c};
+      --dur: ${0.6 + i * 0.08}s;
+      animation-delay: ${i * 0.04}s;
+    `;
+    document.body.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
+  });
+}
+
+function spawnBounceBall(x, y) {
+  const el = document.createElement('div');
+  el.className = 'bounce-ball';
+  el.textContent = randItem(['🏀','⚽','🎾','🏈','🎱','🌍','🍪','💣']);
+  const dur = rand(2, 3.5);
+  const dx = rand(-200, 200);
+  el.style.cssText = `
+    left: ${x}px; top: ${y}px;
+    --dur: ${dur}s;
+    --x1: ${dx * 0.2}px; --y1: ${rand(40, 100)}px;
+    --x2: ${dx * 0.4}px; --y2: ${rand(-20, 30)}px;
+    --x3: ${dx * 0.6}px; --y3: ${rand(60, 120)}px;
+    --x4: ${dx * 0.8}px; --y4: ${rand(0, 40)}px;
+    --x5: ${dx}px;        --y5: ${rand(80, 200)}px;
+  `;
+  document.body.appendChild(el);
+  el.addEventListener('animationend', () => el.remove());
+}
+
+function spawnMeteorShower() {
+  const count = randInt(5, 12);
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'meteor';
+      const color = randColor();
+      const startX = rand(0, window.innerWidth);
+      const dur = rand(0.4, 0.8);
+      el.style.cssText = `
+        left: ${startX}px; top: -50px;
+        background: linear-gradient(to bottom, ${color}, transparent);
+        --color: ${color};
+        --tx: ${rand(-200, -50)}px;
+        --ty: ${window.innerHeight + 100}px;
+        --angle: ${rand(15, 35)}deg;
+        --dur: ${dur}s;
+      `;
+      document.body.appendChild(el);
+      el.addEventListener('animationend', () => el.remove());
+    }, i * rand(50, 150));
+  }
+}
+
+function spawnLaser(y) {
+  const color = randColor();
+  const el = document.createElement('div');
+  el.className = 'laser';
+  el.style.cssText = `
+    left: 0; top: ${y}px;
+    width: 100vw;
+    background: ${color};
+    --color: ${color};
+  `;
+  document.body.appendChild(el);
+  el.addEventListener('animationend', () => el.remove());
+  // second laser at slight offset
+  setTimeout(() => {
+    const el2 = document.createElement('div');
+    el2.className = 'laser';
+    const c2 = randColor();
+    el2.style.cssText = `
+      left: 0; top: ${y + rand(-30, 30)}px;
+      width: 100vw;
+      background: ${c2};
+      --color: ${c2};
+    `;
+    document.body.appendChild(el2);
+    el2.addEventListener('animationend', () => el2.remove());
+  }, 100);
+}
+
+function spawnEmojiRain() {
+  const count = randInt(15, 30);
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'emoji-rain';
+      el.textContent = randItem(EMOJIS);
+      el.style.cssText = `
+        left: ${rand(0, window.innerWidth)}px;
+        top: -40px;
+        font-size: ${randInt(20, 50)}px;
+        --fall: ${window.innerHeight + 80}px;
+        --rot: ${rand(-180, 180)}deg;
+        --dur: ${rand(1, 2.5)}s;
+        animation-delay: ${rand(0, 0.5)}s;
+      `;
+      document.body.appendChild(el);
+      el.addEventListener('animationend', () => el.remove());
+    }, i * 60);
+  }
+}
+
+function shakeScreen() {
+  document.body.classList.remove('shaking');
+  void document.body.offsetWidth;
+  document.body.classList.add('shaking');
+  setTimeout(() => document.body.classList.remove('shaking'), 400);
+}
+
+function spawnSpiralText(x, y, key) {
+  const label = key.length === 1 ? key.toUpperCase() : '?';
+  const count = randInt(6, 12);
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'spiral-char';
+    el.textContent = label;
+    el.style.color = randColor();
+    const angle = (i / count) * Math.PI * 2;
+    const dist = rand(80, 200);
+    const mid = dist * 0.5;
+    el.style.cssText += `
+      left: ${x}px; top: ${y}px;
+      color: ${randColor()};
+      font-size: ${randInt(16, 36)}px;
+      --mx: ${Math.cos(angle + 1) * mid}px;
+      --my: ${Math.sin(angle + 1) * mid}px;
+      --tx: ${Math.cos(angle) * dist}px;
+      --ty: ${Math.sin(angle) * dist}px;
+      --dur: ${rand(0.8, 1.5)}s;
+      animation-delay: ${i * 0.05}s;
+    `;
+    document.body.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
+  }
+}
+
+let bgHue = 0;
+function cycleBackground() {
+  bgHue = (bgHue + randInt(20, 60)) % 360;
+  ctx.fillStyle = `hsla(${bgHue}, 60%, 12%, 0.15)`;
+  ctx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+}
+
+// ─────────────────────────────────────────
 //  EFFECT COMBOS — pick a random chaos burst
 // ─────────────────────────────────────────
+let keyPressCount = 0;
+
 const EFFECTS = [
-  // Emoji shower
+  // Emoji shower + ripple
   (x, y, key, color) => {
-    for (let i = 0; i < randInt(2,5); i++) {
-      setTimeout(() => spawnEmoji(x + rand(-80,80), y + rand(-40,40)), i * 80);
+    for (let i = 0; i < randInt(3,7); i++) {
+      setTimeout(() => spawnEmoji(x + rand(-80,80), y + rand(-40,40)), i * 60);
     }
     spawnRipple(x, y, color);
   },
-  // Star burst + label
+  // Star burst + label + bounce ball
   (x, y, key, color) => {
     spawnStars(x, y, color);
     spawnKeyLabel(x, y, key);
+    spawnBounceBall(x, y);
   },
-  // Big ripple + emoji
+  // Big ripple cascade + emoji
   (x, y, key, color) => {
-    spawnRipple(x, y, color);
-    spawnRipple(x + rand(-30,30), y + rand(-30,30), randColor());
+    for (let i = 0; i < 5; i++) {
+      setTimeout(() => spawnRipple(x + rand(-50,50), y + rand(-50,50), randColor()), i * 80);
+    }
     spawnEmoji(x, y - 30);
+    spawnEmoji(x + 40, y - 50);
   },
-  // Paint + stars + label
+  // Paint + stars + label + shake
   (x, y, key, color) => {
     paintSplat(x, y, color);
     spawnStars(x, y, color);
     spawnKeyLabel(x, y, key);
+    if (Math.random() < 0.4) shakeScreen();
   },
-  // Flash + shower
+  // Flash + emoji shower + laser
   (x, y, key, color) => {
     flashScreen(color);
-    for (let i = 0; i < 3; i++) spawnEmoji(x + rand(-100,100), y + rand(-60,60));
+    for (let i = 0; i < 5; i++) spawnEmoji(x + rand(-120,120), y + rand(-80,80));
+    spawnLaser(y);
   },
-  // Multi-ripple cascade
+  // Rainbow wave + stars
   (x, y, key, color) => {
-    for (let i = 0; i < 4; i++) {
-      setTimeout(() => spawnRipple(x + rand(-40,40), y + rand(-40,40), randColor()), i * 100);
-    }
+    spawnRainbowWave(y);
+    spawnStars(x, y, color);
+    playTone(randItem(noteFreqs) * 2, 'triangle', 0.5);
   },
-  // Confetti star burst
+  // Confetti double burst + paint
   (x, y, key, color) => {
     spawnStars(x, y, color);
-    spawnStars(x + rand(-30,30), y + rand(-30,30), randColor());
+    spawnStars(x + rand(-40,40), y + rand(-40,40), randColor());
+    spawnStars(x + rand(-40,40), y + rand(-40,40), randColor());
     paintSplat(x, y, color);
   },
-  // Label + paint
+  // Label + paint + spiral text
   (x, y, key, color) => {
     spawnKeyLabel(x, y, key);
     paintSplat(x, y, color);
-    spawnEmoji(x + rand(-50,50), y - 50);
+    spawnSpiralText(x, y, key);
+  },
+  // Meteor shower + flash
+  (x, y, key, color) => {
+    spawnMeteorShower();
+    flashScreen(randColor());
+    shakeScreen();
+  },
+  // Bounce balls everywhere
+  (x, y, key, color) => {
+    for (let i = 0; i < randInt(3, 6); i++) {
+      spawnBounceBall(x + rand(-60,60), y + rand(-60,60));
+    }
+    spawnRipple(x, y, color);
+  },
+  // Laser + spiral + stars
+  (x, y, key, color) => {
+    spawnLaser(y);
+    spawnSpiralText(x, y, key);
+    spawnStars(x, y, color);
+  },
+  // Everything at once
+  (x, y, key, color) => {
+    flashScreen(color);
+    spawnStars(x, y, color);
+    spawnEmoji(x, y);
+    paintSplat(x, y, color);
+    spawnRipple(x, y, randColor());
+    spawnKeyLabel(x, y, key);
+    shakeScreen();
   },
 ];
 
@@ -693,6 +995,8 @@ function handleKey(e) {
   e.preventDefault();
   e.stopPropagation();
 
+  keyPressCount++;
+
   // Keyboard effects appear at random screen positions
   const x = rand(80, window.innerWidth - 80);
   const y = rand(80, window.innerHeight - 80);
@@ -703,11 +1007,41 @@ function handleKey(e) {
   const effect = randItem(EFFECTS);
   effect(x, y, key, color);
 
-  // Play random sound
+  // Always play sound
   randItem(SOUNDS)();
 
-  // Change cursor sometimes
-  if (Math.random() < 0.3) rotateCursor();
+  // Bonus chaos: extra random effects on every other press
+  if (Math.random() < 0.4) {
+    const x2 = rand(80, window.innerWidth - 80);
+    const y2 = rand(80, window.innerHeight - 80);
+    randItem(EFFECTS)(x2, y2, key, randColor());
+  }
+
+  // Every 10 presses: big spectacle
+  if (keyPressCount % 10 === 0) {
+    spawnEmojiRain();
+    flashScreen(randColor());
+    shakeScreen();
+    cycleBackground();
+  }
+
+  // Every 20 presses: mega combo
+  if (keyPressCount % 20 === 0) {
+    spawnDragon();
+    setTimeout(() => { spawnFirework(); spawnFirework(); spawnFirework(); }, 500);
+  }
+
+  // Every 30 presses: portal + meteor shower
+  if (keyPressCount % 30 === 0) {
+    spawnPortal();
+    spawnMeteorShower();
+  }
+
+  // Change cursor frequently
+  if (Math.random() < 0.5) rotateCursor();
+
+  // Cycle background subtly
+  if (Math.random() < 0.15) cycleBackground();
 }
 
 document.addEventListener('keydown', handleKey);
@@ -717,10 +1051,25 @@ document.addEventListener('keydown', handleKey);
 // ─────────────────────────────────────────
 document.addEventListener('click', (e) => {
   if (!locked) return;
+  const cx = e.clientX, cy = e.clientY;
   const color = randColor();
-  paintSplat(e.clientX, e.clientY, color);
-  spawnEmoji(e.clientX, e.clientY - 20);
-  spawnStars(e.clientX, e.clientY, color);
+  paintSplat(cx, cy, color);
+  spawnStars(cx, cy, color);
+  spawnRipple(cx, cy, randColor());
+  flashScreen(color);
+
+  // Emoji burst at click
+  for (let i = 0; i < randInt(3, 7); i++) {
+    setTimeout(() => spawnEmoji(cx + rand(-60,60), cy + rand(-60,60)), i * 50);
+  }
+
+  // Random bonus on click
+  const roll = Math.random();
+  if (roll < 0.2) spawnBounceBall(cx, cy);
+  else if (roll < 0.35) spawnLaser(cy);
+  else if (roll < 0.5) spawnRainbowWave(cy);
+  else if (roll < 0.6) { shakeScreen(); spawnMeteorShower(); }
+
   randItem(SOUNDS)();
   rotateCursor();
 });
@@ -744,18 +1093,28 @@ function lock() {
   // Start ambient spectacles
   scheduleAmbient();
 
-  // Warm welcome burst
+  // Warm welcome burst — go big
   setTimeout(() => {
     const cx = window.innerWidth / 2;
     const cy = window.innerHeight / 2;
-    for (let i = 0; i < 8; i++) {
+    // Emoji explosion
+    for (let i = 0; i < 15; i++) {
       setTimeout(() => {
-        const x = cx + rand(-200, 200);
-        const y = cy + rand(-150, 150);
+        const x = cx + rand(-300, 300);
+        const y = cy + rand(-200, 200);
         spawnEmoji(x, y);
         paintSplat(x, y, randColor());
-      }, i * 100);
+        spawnStars(x, y, randColor());
+      }, i * 80);
     }
+    // Firework salute
+    setTimeout(() => { spawnFirework(); spawnFirework(); spawnFirework(); }, 200);
+    // Rainbow wave
+    setTimeout(() => spawnRainbowWave(cy), 500);
+    // Dragon entrance
+    setTimeout(spawnDragon, 800);
+    // Flash + shake
+    setTimeout(() => { flashScreen(randColor()); shakeScreen(); }, 300);
   }, 300);
 }
 
@@ -1046,13 +1405,26 @@ let ambientTimer = null;
 
 function scheduleAmbient() {
   if (!locked) return;
-  const delay = rand(3000, 8000);
+  const delay = rand(1500, 4000);
   ambientTimer = setTimeout(() => {
     if (!locked) return;
     const roll = Math.random();
-    if (roll < 0.33) spawnDragon();
-    else if (roll < 0.66) { spawnFirework(); setTimeout(spawnFirework, rand(300, 800)); }
-    else spawnPortal();
+    if (roll < 0.2) spawnDragon();
+    else if (roll < 0.4) {
+      // Firework barrage
+      for (let i = 0; i < randInt(2, 5); i++) {
+        setTimeout(spawnFirework, i * rand(200, 500));
+      }
+    }
+    else if (roll < 0.55) spawnPortal();
+    else if (roll < 0.65) spawnMeteorShower();
+    else if (roll < 0.75) spawnEmojiRain();
+    else if (roll < 0.85) spawnRainbowWave(rand(100, window.innerHeight - 100));
+    else {
+      // Double feature
+      spawnDragon();
+      setTimeout(spawnPortal, rand(500, 1500));
+    }
     scheduleAmbient();
   }, delay);
 }
