@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>obfy icon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Boogaloo&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 512px; height: 512px; }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fffdf7;
+    overflow: hidden;
+    position: relative;
+  }
+  /* confetti dots, symmetric-ish around the mark */
+  .c { position: absolute; border-radius: 50%; }
+  .c1 { width: 70px; height: 70px; background: #ffed4a; top: 60px;  left: 70px; }
+  .c2 { width: 50px; height: 50px; background: #00cecb; top: 80px;  right: 80px; }
+  .c3 { width: 56px; height: 56px; background: #c77dff; bottom: 80px; left: 90px; }
+  .c4 { width: 66px; height: 66px; background: #ff6b9d; bottom: 64px; right: 72px; }
+
+  .mark {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 14px;
+    transform: translateY(-6px);
+  }
+  .o {
+    font-family: 'Boogaloo', cursive;
+    font-size: 320px;
+    line-height: 0.8;
+    color: #1c1c2e;
+  }
+  .dot {
+    width: 60px; height: 60px;
+    background: #ff5e5b;
+    border: 11px solid #1c1c2e;
+    border-radius: 50%;
+    margin-bottom: 40px;
+  }
+</style>
+</head>
+<body>
+  <div class="c c1"></div>
+  <div class="c c2"></div>
+  <div class="c c3"></div>
+  <div class="c c4"></div>
+  <div class="mark">
+    <span class="o">o</span>
+    <span class="dot"></span>
+  </div>
+</body>
+</html>
