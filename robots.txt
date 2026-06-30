@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Build/source templates — not real pages
+Disallow: /og-card.html
+Disallow: /icon-card.html
+
+Sitemap: https://obfy.xyz/sitemap.xml
